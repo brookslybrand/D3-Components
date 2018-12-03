@@ -12,7 +12,7 @@ const Container = styled.div`
   text-align: center;
 
   > div {
-    width: 50%
+    width: 70%
     height: 80vh
   }
 `
@@ -48,7 +48,7 @@ const DataProvider = ({ children }) => {
   const [data, setData] = useState()
 
   const fetchData = () => {
-    csv('/data/facebook_stock_12-03-18.csv', (d) => {
+    csv('./data/facebook_stock_12-03-18.csv', (d) => {
       const {date, adjClose} = d
       return [new Date(date), adjClose]
     }).then(data => setData(data))
