@@ -64,14 +64,10 @@ const Axes = ({ width, height, xScale, yScale }) => {
   })
       
   return [
-    <g ref={xAxisRef} key="xAxis" transform={`translate(0, ${height})`} />,
+    <g ref={xAxisRef} key="xAxis" transform={`translate(0, ${height ? height : 0})`} />,
     <g ref={yAxisRef} key="yAxis" />
   ]
 }
-
-// Axes.defaultProps = {
-//   margin: {top: 0, right: 0, bottom: 0, left: 0}
-// }
 
 Axes.propTypes = {
   // svgNode: PropTypes.node.isRequired,
@@ -79,12 +75,6 @@ Axes.propTypes = {
   height: PropTypes.number,
   xScale: PropTypes.func,
   yScale: PropTypes.func
-  // margin: PropTypes.shape({
-  //   top: PropTypes.number,
-  //   right: PropTypes.number,
-  //   bottom: PropTypes.number,
-  //   left: PropTypes.number
-  // })
 }
 
 export default Axes

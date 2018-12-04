@@ -57,7 +57,7 @@ const DataProvider = ({ children, keys }) => {
     fetchData()
   }, [svgRef.current])
 
-  const margin = {top: 20, right: 30, bottom: 30, left: 40}
+  const margin = {top: 60, right: 30, bottom: 30, left: 40}
 
   // function for fetching the data and setting it as the state
   // get the props for the axis
@@ -87,8 +87,8 @@ const DataProvider = ({ children, keys }) => {
 
   // render the axis
   return (<>
-    <Button onClick={fetchData}>Add Data</Button>
-    <Button onClick={() => setData(null)}>Remove Data</Button>
+    {/* <Button onClick={fetchData}>Add Data</Button>
+    <Button onClick={() => setData(null)}>Remove Data</Button> */}
     <svg ref={svgRef} width='100%' height='100%'>
       <g ref={gRef} transform={`translate(${margin.left},${margin.top})`}>
         { props ? React.cloneElement(children, props) : null }

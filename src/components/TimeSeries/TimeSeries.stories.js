@@ -65,12 +65,14 @@ const DataProvider = ({ children, keys }) => {
   </>)
 }
 
+const margin = {top: 20, right: 30, bottom: 30, left: 40}
+
 
 storiesOf('Time Series', module)
   .addDecorator(story => <Container><div>{story()}</div></Container>)
   .add('Single Line', () => (
     <DataProvider keys={['adjClose']}>
-      <TimeSeries />
+      <TimeSeries margin={margin}/>
     </DataProvider>
   ))
   .add('Multi Line', () => (
