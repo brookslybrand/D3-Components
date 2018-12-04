@@ -4,15 +4,6 @@ import * as d3 from 'd3'
 
 import Axes from '../Axes'
 
-// TODO: move to another folder
-function removeAllChildren(node) {
-  // as long as a node has a child, remove it
-  // credit: https://stackoverflow.com/questions/683366/remove-all-the-children-dom-elements-in-div
-  while (node.hasChildNodes()) {
-    node.removeChild(node.lastChild)
-  }
-}
-
 const createTimeSeries = function(svgNode, gNode, data, margin, setAxisProps) {
   const {width: svgWidth, height: svgHeight} = svgNode.getBoundingClientRect()
 
@@ -57,6 +48,7 @@ const createTimeSeries = function(svgNode, gNode, data, margin, setAxisProps) {
 
 }
 
+// TODO: Make update rely on D3's pattern
 const updateTimeSeries = function(svgNode, gNode, data, margin, setAxisProps) {
   removeLines(gNode)
   createTimeSeries(svgNode, gNode, data, margin, setAxisProps)

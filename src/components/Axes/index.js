@@ -36,7 +36,7 @@ const createAxes = function(xAxisNode, yAxisNode, width, xScale, yScale) {
 // add empty axes for when a width and height are passed, but no scales
 const createEmptyAxes = function(xAxisNode, yAxisNode, width, height) {
   const fakeScale = dims => d3.scaleLinear().range(dims)
-  
+
   // add the xAxis
   d3.select(xAxisNode)
     .call(d3.axisBottom(fakeScale([0, width])).ticks(0))
@@ -46,17 +46,9 @@ const createEmptyAxes = function(xAxisNode, yAxisNode, width, height) {
     .call(d3.axisLeft(fakeScale([height, 0])).ticks(0))
 }
 
-const updateAxes = function(xAxisNode, yAxisNode, width, xScale, yScale) {
-  removeAllChildren(xAxisNode)
-  removeAllChildren(yAxisNode)
-  createAxes(xAxisNode, yAxisNode, width, xScale, yScale)
-}
-
 const Axes = ({ width, height, xScale, yScale }) => {
   const xAxisRef = useRef()
   const yAxisRef = useRef()
-
-  const handleUpdateAxes = () => updateAxes(xAxisRef.current, yAxisRef.current, width, xScale, yScale)
   
   useEffect(() => {
     const xAxisNode = xAxisRef.current
@@ -65,19 +57,12 @@ const Axes = ({ width, height, xScale, yScale }) => {
     if (!width || !height) {
       removeAllChildren(xAxisNode)
       removeAllChildren(yAxisNode)
-    
     // if there is a width and height, but no scales, create an empty axis
     } else if (!xScale || !yScale) {
       createEmptyAxes(xAxisNode, yAxisNode, width, height)
-      // window.addEventListener('resize', handleUpdateAxes)
     // else create the axes
     } else {
       createAxes(xAxisNode, yAxisNode, width, xScale, yScale)
-      window.addEventListener('resize', handleUpdateAxes)
-    }
-    // remove the event listener when things change
-    return () => {
-      window.removeEventListener('resize', handleUpdateAxes)
     }
   })
       
