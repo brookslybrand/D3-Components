@@ -21,9 +21,9 @@ const createTimeSeries = function(svgNode, gNode, data, margin, setAxisProps) {
       .range([height, 0])
 
     const line = d3.line()
-        .defined(d => !isNaN(d[1]))
-        .x(d => xScale(d[0]))
-        .y(d => yScale(d[1]))
+      .defined(d => !isNaN(d[1]))
+      .x(d => xScale(d[0]))
+      .y(d => yScale(d[1]))
 
     // set the axis props
     setAxisProps({ width, height, xScale, yScale })
@@ -56,7 +56,7 @@ const updateTimeSeries = function(svgNode, gNode, data, margin, setAxisProps) {
 
 const removeLines = (gNode) => d3.select(gNode).selectAll('.path').remove()
 
-const TimeSeries = ({ data, margin}) => {
+const TimeSeries = ({ data, margin }) => {
   const svgRef = useRef()
   const gRef = useRef()
   
@@ -87,7 +87,6 @@ const TimeSeries = ({ data, margin}) => {
       </g>
     </svg>
   )
-
 }
 
 TimeSeries.defaultProps = {

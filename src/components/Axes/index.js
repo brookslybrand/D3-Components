@@ -13,7 +13,7 @@ function removeAllChildren(node) {
 
 const createAxes = function(xAxisNode, yAxisNode, width, xScale, yScale) {
   const xAxis = g => g
-    .call(d3.axisBottom(xScale).ticks(width / 80).tickSizeOuter(0))
+    .call(d3.axisBottom(xScale))//.ticks(width / 80).tickSizeOuter(0))
 
   const yAxis = g => g
     .call(d3.axisLeft(yScale))
@@ -34,7 +34,7 @@ const createAxes = function(xAxisNode, yAxisNode, width, xScale, yScale) {
 }
 
 // add empty axes for when a width and height are passed, but no scales
-const createEmptyAxes = function(xAxisNode, yAxisNode, width, height) {
+const createTicklessAxes = function(xAxisNode, yAxisNode, width, height) {
   const fakeScale = dims => d3.scaleLinear().range(dims)
 
   // add the xAxis
@@ -59,7 +59,7 @@ const Axes = ({ width, height, xScale, yScale }) => {
       removeAllChildren(yAxisNode)
     // if there is a width and height, but no scales, create an empty axis
     } else if (!xScale || !yScale) {
-      createEmptyAxes(xAxisNode, yAxisNode, width, height)
+      createTicklessAxes(xAxisNode, yAxisNode, width, height)
     // else create the axes
     } else {
       createAxes(xAxisNode, yAxisNode, width, xScale, yScale)
