@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
-import { storiesOf } from '@storybook/react';
+import { storiesOf } from '@storybook/react'
 import { csv } from 'd3'
 
 import TimeSeries from '.'
@@ -75,13 +75,13 @@ storiesOf('Time Series', module)
       <TimeSeries margin={margin}/>
     </DataProvider>
   ))
-  .add('Multi Line', () => (
-    <div>Test</div>
-  ))
-  .add('Transitions', () => (
-    <div>Test</div>
-  ))
-  .add('Adjusting Props', () => (
-    <div>Test</div>
-  ))
+  // .add('Multi Line', () => (
+  //   <div>Test</div>
+  // ))
+  // .add('Transitions', () => (
+  //   <div>Test</div>
+  // ))
+  // .add('Adjusting Props', () => (
+  //   <div>Test</div>
+  // ))
 

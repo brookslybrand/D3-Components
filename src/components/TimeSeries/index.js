@@ -9,7 +9,7 @@ function removeAllChildren(node) {
   // as long as a node has a child, remove it
   // credit: https://stackoverflow.com/questions/683366/remove-all-the-children-dom-elements-in-div
   while (node.hasChildNodes()) {
-    node.removeChild(node.lastChild);
+    node.removeChild(node.lastChild)
   }
 }
 
@@ -19,33 +19,42 @@ const createTimeSeries = function(svgNode, gNode, data, margin, setAxisProps) {
   const width = Math.floor(svgWidth) - margin.left - margin.right
   const height = Math.floor(svgHeight) - margin.top - margin.bottom
 
-  const xScale = d3.scaleTime()
-    .domain(d3.extent(data, d => d[0]))
-    .range([0, width])
+  // if there's data, create the plot
+  if (data) {
+    const xScale = d3.scaleTime()
+      .domain(d3.extent(data, d => d[0]))
+      .range([0, width])
 
-  const yScale = d3.scaleLinear()
-    .domain(d3.extent(data, d => d[1]))
-    .range([height, 0])
+    const yScale = d3.scaleLinear()
+      .domain(d3.extent(data, d => d[1]))
+      .range([height, 0])
 
-  const line = d3.line()
-      .defined(d => !isNaN(d[1]))
-      .x(d => xScale(d[0]))
-      .y(d => yScale(d[1]))
+    const line = d3.line()
+        .defined(d => !isNaN(d[1]))
+        .x(d => xScale(d[0]))
+        .y(d => yScale(d[1]))
 
-  // set the axis props
-  setAxisProps({ width, height, xScale, yScale })
+    // set the axis props
+    setAxisProps({ width, height, xScale, yScale })
 
-  // select the path rendered by react
-  d3.select(gNode)
-    .append('path')
-    .attr('class', 'path')
-    .datum(data)
-    .attr('fill', 'none')
-    .attr('stroke', 'steelblue')
-    .attr('stroke-width', 1.5)
-    .attr('stroke-linejoin', 'round')
-    .attr('stroke-linecap', 'round')
-    .attr('d', line);
+    // select the path rendered by react
+    d3.select(gNode)
+      .append('path')
+      .attr('class', 'path')
+      .datum(data)
+      .attr('fill', 'none')
+      .attr('stroke', 'steelblue')
+      .attr('stroke-width', 1.5)
+      .attr('stroke-linejoin', 'round')
+      .attr('stroke-linecap', 'round')
+      .attr('d', line)
+
+  // otherwise render empty axes
+  } else {
+    removeLines(gNode)
+    setAxisProps({width, height, xScale: null, yScale: null})
+  }
+
 }
 
 const updateTimeSeries = function(svgNode, gNode, data, margin, setAxisProps) {
@@ -53,7 +62,7 @@ const updateTimeSeries = function(svgNode, gNode, data, margin, setAxisProps) {
   createTimeSeries(svgNode, gNode, data, margin, setAxisProps)
 }
 
-const removeLines = (gNode) => d3.select(gNode).selectAll('.path').remove();
+const removeLines = (gNode) => d3.select(gNode).selectAll('.path').remove()
 
 const TimeSeries = ({ data, margin}) => {
   const svgRef = useRef()
@@ -61,21 +70,19 @@ const TimeSeries = ({ data, margin}) => {
   
   // props for rendering the axes
   const [axisProps, setAxisProps] = useState({width: null, height: null, xScale: null, yScale: null})
+  // merge together new props with old props
+  const handleSetAxisProps = newAxisProps => setAxisProps(prevAxisProps => ({...prevAxisProps, ...newAxisProps}))
 
-  const handleUpdateTimeSeries = () => updateTimeSeries(svgRef.current, gRef.current, data, margin, setAxisProps)
+  const handleUpdateTimeSeries = () => updateTimeSeries(svgRef.current, gRef.current, data, margin, handleSetAxisProps)
   
   useEffect(() => {
     const svgNode = svgRef.current
     const gNode = gRef.current
-    // if there is data, make the time series
-    if (data) {
-      createTimeSeries(svgNode, gNode, data, margin, setAxisProps)
-      window.addEventListener('resize', handleUpdateTimeSeries)
-    // if there is no data, remove anything that might have been added to the svg
-    } else {
-      removeLines(gNode)
-    }
-    // remove the event listener when things change
+
+    createTimeSeries(svgNode, gNode, data, margin, handleSetAxisProps)
+    window.addEventListener('resize', handleUpdateTimeSeries)
+
+    // remove the event listener when dismounting
     return () => {
       window.removeEventListener('resize', handleUpdateTimeSeries)
     }
@@ -85,7 +92,6 @@ const TimeSeries = ({ data, margin}) => {
     <svg ref={svgRef} width='100%' height='100%'>
       <g ref={gRef} transform={`translate(${margin.left},${margin.top})`}>
         <Axes {...axisProps} />
-        {/* <path /> */}
       </g>
     </svg>
   )
@@ -98,6 +104,7 @@ TimeSeries.defaultProps = {
 }
 
 TimeSeries.propTypes = {
+  data: PropTypes.arrayOf(PropTypes.array),
   margin: PropTypes.shape({
     top: PropTypes.number,
     right: PropTypes.number,

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
-import { storiesOf } from '@storybook/react';
+import { storiesOf } from '@storybook/react'
 import { csv, scaleTime, scaleLinear, extent } from 'd3'
 
 import Axes from '.'
