@@ -32,12 +32,13 @@ const createTimeSeries = function(svgNode, gNode, data, margin, setAxisProps) {
       .x(d => xScale(d[0]))
       .y(d => yScale(d[1]))
 
-  const svg = d3.select(gNode)
-
   // set the axis props
   setAxisProps({ width, height, xScale, yScale })
 
-  svg.append('path')
+  // select the path rendered by react
+  d3.select(gNode)
+    .append('path')
+    .attr('class', 'path')
     .datum(data)
     .attr('fill', 'none')
     .attr('stroke', 'steelblue')
@@ -47,10 +48,12 @@ const createTimeSeries = function(svgNode, gNode, data, margin, setAxisProps) {
     .attr('d', line);
 }
 
-const updateTimeSeries = function(svgNode, gNode, data, margin) {
-  removeAllChildren(gNode)
+const updateTimeSeries = function(svgNode, gNode, data, margin, setAxisProps) {
+  removeLines(gNode)
   createTimeSeries(svgNode, gNode, data, margin, setAxisProps)
 }
+
+const removeLines = (gNode) => d3.select(gNode).selectAll('.path').remove();
 
 const TimeSeries = ({ data, margin}) => {
   const svgRef = useRef()
@@ -59,7 +62,7 @@ const TimeSeries = ({ data, margin}) => {
   // props for rendering the axes
   const [axisProps, setAxisProps] = useState({width: null, height: null, xScale: null, yScale: null})
 
-  const handleUpdateTimeSeries = () => updateTimeSeries(svgRef.current, gRef.current, data, margin)
+  const handleUpdateTimeSeries = () => updateTimeSeries(svgRef.current, gRef.current, data, margin, setAxisProps)
   
   useEffect(() => {
     const svgNode = svgRef.current
@@ -67,21 +70,22 @@ const TimeSeries = ({ data, margin}) => {
     // if there is data, make the time series
     if (data) {
       createTimeSeries(svgNode, gNode, data, margin, setAxisProps)
-      // window.addEventListener('resize', handleUpdateTimeSeries)
+      window.addEventListener('resize', handleUpdateTimeSeries)
     // if there is no data, remove anything that might have been added to the svg
     } else {
-      // removeAllChildren(gNode)
+      removeLines(gNode)
     }
     // remove the event listener when things change
-    // return () => {
-    //   window.removeEventListener('resize', handleUpdateTimeSeries)
-    // }
+    return () => {
+      window.removeEventListener('resize', handleUpdateTimeSeries)
+    }
   }, [data, margin])
       
   return (
     <svg ref={svgRef} width='100%' height='100%'>
       <g ref={gRef} transform={`translate(${margin.left},${margin.top})`}>
         <Axes {...axisProps} />
+        {/* <path /> */}
       </g>
     </svg>
   )
