@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useRef } from 'react'
+import React, { useRef, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import * as d3 from 'd3'
 
@@ -11,7 +11,7 @@ function removeAllChildren(node) {
   }
 }
 
-const createTimeSeries = function({svgNode, data, margin={}}) {
+const createTimeSeries = function({svgNode, gNode, data, margin={}}) {
   const {width: svgWidth, height: svgHeight} = svgNode.getBoundingClientRect()
 
   const width = Math.floor(svgWidth) - margin.left - margin.right
@@ -43,9 +43,7 @@ const createTimeSeries = function({svgNode, data, margin={}}) {
       .x(d => x(d[0]))
       .y(d => y(d[1]))
 
-  const svg = d3.select(svgNode)
-    .append('g')
-      .attr('transform', `translate(${margin.left},${margin.top})`)
+  const svg = d3.select(gNode)
 
   svg.append('g')
     .call(xAxis)
@@ -63,25 +61,27 @@ const createTimeSeries = function({svgNode, data, margin={}}) {
     .attr('d', line);
 }
 
-const updateTimeSeries = function(svgNode, data, margin) {
-  removeAllChildren(svgNode)
-  createTimeSeries({svgNode, data, margin})
+const updateTimeSeries = function(svgNode, gNode, data, margin) {
+  removeAllChildren(gNode)
+  createTimeSeries({svgNode, gNode, data, margin})
 }
 
 const TimeSeries = ({ data, margin}) => {
   const svgRef = useRef()
+  const gRef = useRef()
 
-  const handleUpdateTimeSeries = () => updateTimeSeries(svgRef.current, data, margin)
+  const handleUpdateTimeSeries = () => updateTimeSeries(svgRef.current, gRef.current, data, margin)
   
   useEffect(() => {
     const svgNode = svgRef.current
+    const gNode = gRef.current
     // if there is data, make the time series
     if (data) {
-      createTimeSeries({svgNode, data, margin})
+      createTimeSeries({svgNode, gNode, data, margin})
       window.addEventListener('resize', handleUpdateTimeSeries)
     // if there is no data, remove anything that might have been added to the svg
     } else {
-      removeAllChildren(svgNode)
+      removeAllChildren(gNode)
     }
     // remove the event listener when things change
     return () => {
@@ -89,7 +89,12 @@ const TimeSeries = ({ data, margin}) => {
     }
   })
       
-  return <svg ref={svgRef} width='100%' height='100%' />
+  return (
+    <svg ref={svgRef} width='100%' height='100%'>
+      <g ref={gRef} transform={`translate(${margin.left},${margin.top})`} />
+    </svg>
+  )
+
 }
 
 TimeSeries.defaultProps = {

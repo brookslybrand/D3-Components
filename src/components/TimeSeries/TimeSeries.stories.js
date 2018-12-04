@@ -44,13 +44,17 @@ const Button = styled.button`
   }
 `
 
-const DataProvider = ({ children }) => {
-  const [data, setData] = useState()
+// children is the TimeSeries component passed down,
+// keys is the keys to get the data
+const DataProvider = ({ children, keys }) => {
+  // load the data initially
+  const [data, setData] = useState(() => fetchData())
 
-  const fetchData = () => {
+  // function for fetching the data and setting it as the state
+  function fetchData() {
     csv('./data/facebook_stock_12-03-18.csv', (d) => {
-      const {date, adjClose} = d
-      return [new Date(date), adjClose]
+      const { date } = d      
+      return [new Date(date)].concat(keys.map(key => Number.parseFloat(d[key])))
     }).then(data => setData(data))
   }
 
@@ -65,8 +69,17 @@ const DataProvider = ({ children }) => {
 storiesOf('Time Series', module)
   .addDecorator(story => <Container><div>{story()}</div></Container>)
   .add('Single Line', () => (
-    <DataProvider>
+    <DataProvider keys={['adjClose']}>
       <TimeSeries />
     </DataProvider>
+  ))
+  .add('Multi Line', () => (
+    <div>Test</div>
+  ))
+  .add('Transitions', () => (
+    <div>Test</div>
+  ))
+  .add('Adjusting Props', () => (
+    <div>Test</div>
   ))
 
