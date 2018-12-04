@@ -18,7 +18,6 @@ const Container = styled.div`
 `
 
 const Button = styled.button`
-
   &{
     background-color: white; 
     border: 2px solid #008CBA;

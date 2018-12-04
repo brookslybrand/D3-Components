@@ -15,33 +15,38 @@ const createTimeSeries = function(svgNode, gNode, data, margin, setAxisProps) {
 
   // if there's data, create the plot
   if (data) {
+    const { dates, series } = data
+
+    const yData = series[0].values // TODO: change
+
     const xScale = scaleTime()
-      .domain(extent(data, d => d[0]))
+      .domain(extent(dates))
       .range([0, width])
 
     const yScale = scaleLinear()
-      .domain(extent(data, d => d[1]))
+      .domain(extent(series.reduce((arr, d) => arr.concat(d.values), [])))
       .range([height, 0])
 
     const createLine = line()
-      .defined(d => !isNaN(d[1]))
-      .x(d => xScale(d[0]))
-      .y(d => yScale(d[1]))
+      .defined(d => !isNaN(d))
+      .x((d, i) => xScale(data.dates[i]))
+      .y(d => yScale(d))
 
     // set the axis props
     setAxisProps({ width, height, xScale, yScale })
 
     // select the path rendered by react
     select(gNode)
-      .append('path')
-      .attr('class', 'path')
-      .datum(data)
-      .attr('fill', 'none')
-      .attr('stroke', 'steelblue')
-      .attr('stroke-width', 1.5)
-      .attr('stroke-linejoin', 'round')
-      .attr('stroke-linecap', 'round')
-      .attr('d', createLine)
+      .append("g")
+      .attr("fill", "none")
+      .attr("stroke", "steelblue")
+      .attr("stroke-width", 1.5)
+      .attr("stroke-linejoin", "round")
+      .attr("stroke-linecap", "round")
+    .selectAll("path")
+    .data(data.series)
+    .enter().append("path")
+      .attr("d", d => createLine(d.values))
 
   // otherwise render empty axes
   } else {
@@ -98,7 +103,13 @@ TimeSeries.defaultProps = {
 }
 
 TimeSeries.propTypes = {
-  data: PropTypes.arrayOf(PropTypes.array),
+  data: PropTypes.shape({
+    series: PropTypes.arrayOf(PropTypes.shape({
+      name: PropTypes.string.isRequired,
+      values: PropTypes.arrayOf(PropTypes.number).isRequired
+    })).isRequired,
+    dates: PropTypes.arrayOf(PropTypes.instanceOf(Date)).isRequired
+  }),
   margin: PropTypes.shape({
     top: PropTypes.number,
     right: PropTypes.number,

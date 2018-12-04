@@ -53,9 +53,26 @@ const DataProvider = ({ children, keys }) => {
   // function for fetching the data and setting it as the state
   function fetchData() {
     csv('./data/facebook_stock_12-03-18.csv', (d) => {
-      const { date } = d      
-      return [new Date(date)].concat(keys.map(key => Number.parseFloat(d[key])))
-    }).then(data => setData(data))
+      // parse the dates
+      const date = new Date(d.date)
+      // parse all the values 
+      const values = Object.keys(d)
+        .filter(key => key !== 'date')
+        .reduce((obj, key) => ({...obj, [key]: Number.parseFloat(d[key])}), {})
+      // return the new object
+      return { date , ...values}
+    }).then(function(data) {
+      // get the dates
+      const dates = data.map(d => d.date)
+
+      // get the series values
+      const series = keys.map(key => ({
+        name: 'Adjusted Close',
+        values: data.map(d => d[key])
+      }))
+
+      setData({ dates, series })
+    })
   }
 
   return (<>
