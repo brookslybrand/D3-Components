@@ -16,7 +16,7 @@ const createTimeSeries = function(svgNode, gNode, data, margin, setAxisProps) {
 
   // if there's data, create the plot
   if (data) {
-    const { dates, series } = data
+    const { name, dates, series } = rationalizeData(data)
 
     const yData = series[0].values // TODO: change
 
@@ -30,24 +30,35 @@ const createTimeSeries = function(svgNode, gNode, data, margin, setAxisProps) {
 
     const createLine = line()
       .defined(d => !isNaN(d))
-      .x((d, i) => xScale(data.dates[i]))
+      .x((d, i) => xScale(dates[i]))
       .y(d => yScale(d))
 
     // set the axis props
     setAxisProps({ width, height, xScale, yScale })
 
+    console.log(select(gNode))
+
     // select the path rendered by react
-    select(gNode)
-      .append('g')
+    const lines = select(gNode)
+      // .select('#paths')
+      .selectAll('path')
+        .data(series, d => d.name)
+
+    console.log(lines._exit.length)
+
+    // EXIT
+    // lines.exit().remove()
+
+    // UPDATE
+
+    // ENTER
+    lines
+      .enter().append('path')
       .attr('class', 'path')
       .attr('fill', 'none')
-      // .attr('stroke', 'steelblue')
       .attr('stroke-width', 1.5)
       .attr('stroke-linejoin', 'round')
       .attr('stroke-linecap', 'round')
-    .selectAll('path')
-    .data(data.series)
-    .enter().append('path')
       .style('mix-blend-mode', 'multiply')
       .attr('stroke', (d, i) => schemeCategory10[i])
       .attr('d', d => createLine(d.values))
@@ -94,11 +105,20 @@ const TimeSeries = ({ data, margin }) => {
       
   return (
     <svg ref={svgRef} width='100%' height='100%'>
-      <g ref={gRef} transform={`translate(${margin.left},${margin.top})`}>
+      <g transform={`translate(${margin.left},${margin.top})`}>
         <Axes {...axisProps} />
+        <g ref={gRef}></g>
       </g>
     </svg>
   )
+}
+
+// fill in the default values for any data properties not provided
+const rationalizeData = data => {
+  const name = data.name ? data.name : ''
+  const series = data.series.map((d, i) => d.name ? d : {...d, name: String(i)})
+
+  return {...data, name, series}
 }
 
 TimeSeries.defaultProps = {
@@ -108,8 +128,9 @@ TimeSeries.defaultProps = {
 
 TimeSeries.propTypes = {
   data: PropTypes.shape({
+    name: PropTypes.string,
     series: PropTypes.arrayOf(PropTypes.shape({
-      name: PropTypes.string.isRequired,
+      name: PropTypes.string,
       values: PropTypes.arrayOf(PropTypes.number).isRequired
     })).isRequired,
     dates: PropTypes.arrayOf(PropTypes.instanceOf(Date)).isRequired

@@ -64,7 +64,7 @@ const DataProvider = ({ children, keys }) => {
   // get the props for the axis
   // a bit dirty, but it's fine for the storybook
   function fetchData() {
-    csv('./data/facebook_stock_12-03-18.csv', (d) => {
+    csv('./data/FB.csv', (d) => {
       const { date } = d      
       return [new Date(date)].concat(keys.map(key => Number.parseFloat(d[key])))
     }).then(data => {
