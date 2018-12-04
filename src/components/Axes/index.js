@@ -1,6 +1,8 @@
 import React, { useEffect, useRef } from 'react'
 import PropTypes from 'prop-types'
-import * as d3 from 'd3'
+import { axisBottom, axisLeft } from 'd3-axis'
+import { scaleLinear } from 'd3-scale'
+import { select } from 'd3-selection'
 
 // TODO: move to another folder
 function removeAllChildren(node) {
@@ -13,10 +15,10 @@ function removeAllChildren(node) {
 
 const createAxes = function(xAxisNode, yAxisNode, width, xScale, yScale) {
   const xAxis = g => g
-    .call(d3.axisBottom(xScale))//.ticks(width / 80).tickSizeOuter(0))
+    .call(axisBottom(xScale))//.ticks(width / 80).tickSizeOuter(0))
 
   const yAxis = g => g
-    .call(d3.axisLeft(yScale))
+    .call(axisLeft(yScale))
     // .call(g => g.select('.domain').remove())
     // .call(g => g.select('.tick:last-of-type text').clone()
     //     .attr('x', 3)
@@ -25,25 +27,25 @@ const createAxes = function(xAxisNode, yAxisNode, width, xScale, yScale) {
     //     .text('test'))
 
   // add the xAxis
-  d3.select(xAxisNode)
+  select(xAxisNode)
     .call(xAxis)
 
   // add the yAxis
-  d3.select(yAxisNode)
+  select(yAxisNode)
     .call(yAxis)
 }
 
 // add empty axes for when a width and height are passed, but no scales
 const createTicklessAxes = function(xAxisNode, yAxisNode, width, height) {
-  const fakeScale = dims => d3.scaleLinear().range(dims)
+  const fakeScale = dims => scaleLinear().range(dims)
 
   // add the xAxis
-  d3.select(xAxisNode)
-    .call(d3.axisBottom(fakeScale([0, width])).ticks(0))
+  select(xAxisNode)
+    .call(axisBottom(fakeScale([0, width])).ticks(0))
 
   // add the yAxis
-  d3.select(yAxisNode)
-    .call(d3.axisLeft(fakeScale([height, 0])).ticks(0))
+  select(yAxisNode)
+    .call(axisLeft(fakeScale([height, 0])).ticks(0))
 }
 
 const Axes = ({ width, height, xScale, yScale }) => {

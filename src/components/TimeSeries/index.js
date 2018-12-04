@@ -1,6 +1,9 @@
 import React, { useRef, useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
-import * as d3 from 'd3'
+import { extent } from 'd3-array'
+import { scaleLinear, scaleTime } from 'd3-scale'
+import { select } from 'd3-selection'
+import { line } from 'd3-shape'
 
 import Axes from '../Axes'
 
@@ -12,15 +15,15 @@ const createTimeSeries = function(svgNode, gNode, data, margin, setAxisProps) {
 
   // if there's data, create the plot
   if (data) {
-    const xScale = d3.scaleTime()
-      .domain(d3.extent(data, d => d[0]))
+    const xScale = scaleTime()
+      .domain(extent(data, d => d[0]))
       .range([0, width])
 
-    const yScale = d3.scaleLinear()
-      .domain(d3.extent(data, d => d[1]))
+    const yScale = scaleLinear()
+      .domain(extent(data, d => d[1]))
       .range([height, 0])
 
-    const line = d3.line()
+    const createLine = line()
       .defined(d => !isNaN(d[1]))
       .x(d => xScale(d[0]))
       .y(d => yScale(d[1]))
@@ -29,7 +32,7 @@ const createTimeSeries = function(svgNode, gNode, data, margin, setAxisProps) {
     setAxisProps({ width, height, xScale, yScale })
 
     // select the path rendered by react
-    d3.select(gNode)
+    select(gNode)
       .append('path')
       .attr('class', 'path')
       .datum(data)
@@ -38,7 +41,7 @@ const createTimeSeries = function(svgNode, gNode, data, margin, setAxisProps) {
       .attr('stroke-width', 1.5)
       .attr('stroke-linejoin', 'round')
       .attr('stroke-linecap', 'round')
-      .attr('d', line)
+      .attr('d', createLine)
 
   // otherwise render empty axes
   } else {
@@ -54,7 +57,7 @@ const updateTimeSeries = function(svgNode, gNode, data, margin, setAxisProps) {
   createTimeSeries(svgNode, gNode, data, margin, setAxisProps)
 }
 
-const removeLines = (gNode) => d3.select(gNode).selectAll('.path').remove()
+const removeLines = (gNode) => select(gNode).selectAll('.path').remove()
 
 const TimeSeries = ({ data, margin }) => {
   const svgRef = useRef()
