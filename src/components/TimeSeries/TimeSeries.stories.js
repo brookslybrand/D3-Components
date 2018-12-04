@@ -47,54 +47,84 @@ const Button = styled.button`
 // children is the TimeSeries component passed down,
 // keys is the keys to get the data
 const DataProvider = ({ children, datasets, keys }) => {
+  // an object that lets the checkboxes know which ones are selected
+  const [selectedDatasets, setSelectedDatasets] = useState(
+    datasets.reduce((obj, dataset) => ({...obj, [dataset]: true}), {})
+  )
   // load the data initially
-  const [data, setData] = useState(() => fetchData())
+  const [data, setData] = useState(() => fetchData(Object.keys(selectedDatasets).filter(key => selectedDatasets[key])))
 
   // function for fetching the data and setting it as the state
   // this is not optimized, just trying to get stuff working
-  function fetchData() {
-    const datasetPromise = datasets.map(dataset => {
-      return csv(`./data/${dataset}`, (d) => {
-        // parse the dates
-        const date = d.date // new Date(d.date)
-        // parse all the values 
-        const values = new Map(
-          Object.keys(d)
-            .filter(key => key !== 'date')
-            .map(key => [key, Number.parseFloat(d[key])])
-          )
-        // return the new object
-        return [date , values]
-      }).then(data => new Map(data))
-    })
-
-    Promise.all(datasetPromise)
-      .then(function(datasetMaps) {
-        // get the dates
-        const combinedData = datasetMaps.reduce((obj, data, i) => {
-          // join all the unique dates
-          const dates = Array.from(new Set([...obj.dates, ...Array.from(data.keys())]))
-            // sort in ascending order
-            .sort((a, b) => a - b)
-
-          const values = dates.map(date => data.has(date) ? data.get(date) : null)
-
-          // get the series values
-          const series = keys.map(key => ({
-            name: datasets[i].replace('.csv', ''),
-            values: values.map(d => d.has(key) ? d.get(key) : null)
-          }))
-
-          return {...obj, dates, series: obj.series.concat(series)}
-        }, {name: 'Stocks', dates: [], series: []})
-
-        setData({...combinedData, dates: combinedData.dates.map(d => new Date(d))})
+  function fetchData(datasets) {
+    if (datasets.length) {
+      const datasetPromise = datasets.map(dataset => {
+        return csv(`./data/${dataset}`, (d) => {
+          // parse the dates
+          const date = d.date // new Date(d.date)
+          // parse all the values 
+          const values = new Map(
+            Object.keys(d)
+              .filter(key => key !== 'date')
+              .map(key => [key, Number.parseFloat(d[key])])
+            )
+          // return the new object
+          return [date , values]
+        }).then(data => new Map(data))
       })
+  
+      Promise.all(datasetPromise)
+        .then(function(datasetMaps) {
+          // get the dates
+          const combinedData = datasetMaps.reduce((obj, data, i) => {
+            // join all the unique dates
+            const dates = Array.from(new Set([...obj.dates, ...Array.from(data.keys())]))
+              // sort in ascending order
+              .sort((a, b) => a - b)
+  
+            const values = dates.map(date => data.has(date) ? data.get(date) : null)
+  
+            // get the series values
+            const series = keys.map(key => ({
+              name: datasets[i].replace('.csv', ''),
+              values: values.map(d => d.has(key) ? d.get(key) : null)
+            }))
+  
+            return {...obj, dates, series: obj.series.concat(series)}
+          }, {name: 'Stocks', dates: [], series: []})
+  
+          setData({...combinedData, dates: combinedData.dates.map(d => new Date(d))})
+        })
+    } else {
+      setData(null)
+    }
+
+    
+  }
+
+  const handleSetSelectedDatasets = (dataset) => {
+    setSelectedDatasets(prevSelectedDatasets => {
+      const newSelectedDatasets = {...prevSelectedDatasets, [dataset]: !prevSelectedDatasets[dataset]}
+      fetchData(
+        Object.keys(newSelectedDatasets).filter(key => newSelectedDatasets[key])
+      )
+      return newSelectedDatasets
+    })
   }
 
   return (<>
-    <Button onClick={fetchData}>Add Data</Button>
-    <Button onClick={() => setData(null)}>Remove Data</Button>
+    {
+      datasets.map(dataset => (
+        <span key={dataset}>
+            <input
+              type="checkbox" name={dataset} value={dataset}
+              checked={selectedDatasets[dataset]}
+              onChange={() => handleSetSelectedDatasets(dataset)}
+            />
+            {dataset.replace('.csv', '')}
+        </span>
+      ))
+    }
     {React.cloneElement(children, { data })}
   </>)
 }

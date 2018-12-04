@@ -36,18 +36,14 @@ const createTimeSeries = function(svgNode, gNode, data, margin, setAxisProps) {
     // set the axis props
     setAxisProps({ width, height, xScale, yScale })
 
-    console.log(select(gNode))
-
     // select the path rendered by react
     const lines = select(gNode)
       // .select('#paths')
       .selectAll('path')
         .data(series, d => d.name)
 
-    console.log(lines._exit.length)
-
     // EXIT
-    // lines.exit().remove()
+    lines.exit().remove()
 
     // UPDATE
 
