@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import { extent } from 'd3-array'
+import { schemeCategory10  } from 'd3-scale-chromatic' // TODO: Delete
 import { scaleLinear, scaleTime } from 'd3-scale'
 import { select } from 'd3-selection'
 import { line } from 'd3-shape'
@@ -37,16 +38,19 @@ const createTimeSeries = function(svgNode, gNode, data, margin, setAxisProps) {
 
     // select the path rendered by react
     select(gNode)
-      .append("g")
-      .attr("fill", "none")
-      .attr("stroke", "steelblue")
-      .attr("stroke-width", 1.5)
-      .attr("stroke-linejoin", "round")
-      .attr("stroke-linecap", "round")
-    .selectAll("path")
+      .append('g')
+      .attr('class', 'path')
+      .attr('fill', 'none')
+      // .attr('stroke', 'steelblue')
+      .attr('stroke-width', 1.5)
+      .attr('stroke-linejoin', 'round')
+      .attr('stroke-linecap', 'round')
+    .selectAll('path')
     .data(data.series)
-    .enter().append("path")
-      .attr("d", d => createLine(d.values))
+    .enter().append('path')
+      .style('mix-blend-mode', 'multiply')
+      .attr('stroke', (d, i) => schemeCategory10[i])
+      .attr('d', d => createLine(d.values))
 
   // otherwise render empty axes
   } else {

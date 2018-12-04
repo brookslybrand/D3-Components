@@ -92,9 +92,11 @@ storiesOf('Time Series', module)
       <TimeSeries margin={margin}/>
     </DataProvider>
   ))
-  // .add('Multi Line', () => (
-  //   <div>Test</div>
-  // ))
+  .add('Multi Line', () => (
+    <DataProvider keys={['open', 'high', 'low', 'close', 'adjClose']}>
+      <TimeSeries margin={margin}/>
+    </DataProvider>
+  ))
   // .add('Transitions', () => (
   //   <div>Test</div>
   // ))
