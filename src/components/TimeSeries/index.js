@@ -18,14 +18,12 @@ const createTimeSeries = function(gNode, data, margin, setAxisProps, transitionD
   const width = Math.floor(svgWidth) - margin.left - margin.right
   const height = Math.floor(svgHeight) - margin.top - margin.bottom
 
-  // create the transition used throughout
+  // generate a transition based on the transitionDuration prop
   const t = transition().duration(transitionDuration)
 
   // if there's data, create the plot
   if (data) {
     const { name, dates, series } = rationalizeData(data)
-
-    const yData = series[0].values // TODO: change
 
     const xScale = scaleTime()
       .domain(extent(dates))
@@ -41,11 +39,10 @@ const createTimeSeries = function(gNode, data, margin, setAxisProps, transitionD
       .y(d => yScale(d))
 
     // set the axis props
-    setAxisProps({ width, height, xScale, yScale })
+    setAxisProps({ width, height, xScale, yScale, transitionDuration })
 
     // select the path rendered by react
     const lines = select(gNode)
-      // .select('#paths')
       .selectAll('path')
         .data(series, d => d.name)
 
@@ -73,16 +70,24 @@ const createTimeSeries = function(gNode, data, margin, setAxisProps, transitionD
 
   // otherwise render empty axes
   } else {
-    removeLines(gNode)
+    // if there is no data, transition out all lines
+    const lines = select(gNode)
+      .selectAll('path')
+      .data([], d => d.name)
+      .exit()
+      .transition(t)
+      .style('opacity', 0) // fade out the line before removing it
+      .remove()
+
     setAxisProps({xScale: null, yScale: null})
   }
 
 }
 
-// TODO: Make update rely on D3's pattern
 const updateTimeSeries = function(gNode, data, margin, setAxisProps, transitionDuration) {
   removeLines(gNode)
-  // when resizing, don't transition
+  // when resizing, don't transition the axes or the time series
+  setAxisProps({ transitionDuration: 0 })
   createTimeSeries(gNode, data, margin, setAxisProps, 0)
 }
 
@@ -92,7 +97,7 @@ const TimeSeries = ({ data, margin, transitionDuration }) => {
   const gRef = useRef()
   
   // props for rendering the axes
-  const [axisProps, setAxisProps] = useState({width: null, height: null, xScale: null, yScale: null})
+  const [axisProps, setAxisProps] = useState({ width: null, height: null, xScale: null, yScale: null, transitionDuration })
   // merge together new props with old props
   const handleSetAxisProps = newAxisProps => setAxisProps(prevAxisProps => ({...prevAxisProps, ...newAxisProps}))
 

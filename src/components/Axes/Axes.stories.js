@@ -43,8 +43,6 @@ const Button = styled.button`
   }
 `
 
-// TODO: Make it re-render the axes on window resizing
-
 // children is the TimeSeries component passed down,
 // keys is the keys to get the data
 const DataProvider = ({ children, keys }) => {

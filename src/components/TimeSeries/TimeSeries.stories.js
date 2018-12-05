@@ -144,9 +144,6 @@ storiesOf('Time Series', module)
       <TimeSeries margin={margin}/>
     </DataProvider>
   ))
-  // .add('Transitions', () => (
-  //   <div>Test</div>
-  // ))
   // .add('Adjusting Props', () => (
   //   <div>Test</div>
   // ))
