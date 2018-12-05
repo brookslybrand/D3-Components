@@ -1,18 +1,25 @@
-import React, { useRef, useEffect, useState } from 'react'
+import React, { useRef, useLayoutEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import { extent } from 'd3-array'
 import { schemeCategory10  } from 'd3-scale-chromatic' // TODO: Delete
 import { scaleLinear, scaleTime } from 'd3-scale'
 import { select } from 'd3-selection'
 import { line } from 'd3-shape'
+import { transition } from 'd3-transition'
 
 import Axes from '../Axes'
 
-const createTimeSeries = function(svgNode, gNode, data, margin, setAxisProps) {
-  const {width: svgWidth, height: svgHeight} = svgNode.getBoundingClientRect()
+const createTimeSeries = function(gNode, data, margin, setAxisProps, transitionDuration) {
+  // get the width from the main svg and compute the width and height of the visualization
+  const {width: svgWidth, height: svgHeight} = gNode
+    .parentElement.parentElement // a little silly to go up 2 parents, but avoids creating another ref
+    .getBoundingClientRect()
 
   const width = Math.floor(svgWidth) - margin.left - margin.right
   const height = Math.floor(svgHeight) - margin.top - margin.bottom
+
+  // create the transition used throughout
+  const t = transition().duration(transitionDuration)
 
   // if there's data, create the plot
   if (data) {
@@ -43,40 +50,45 @@ const createTimeSeries = function(svgNode, gNode, data, margin, setAxisProps) {
         .data(series, d => d.name)
 
     // EXIT
-    lines.exit().remove()
+    lines.exit()
+      .transition(t)
+      .style('opacity', 0) // fade out the line before removing it
+      .remove()
 
     // UPDATE
+    lines
+      .transition(t)
+      .attr('stroke', (d, i) => schemeCategory10[i]) // update the color
+      .attr('d', d => createLine(d.values)) // update the line
+      .style('opacity', 1) // ensure that the line is visible in case it was interrupted
 
     // ENTER
     lines
-      .enter().append('path')
-      .attr('class', 'path')
-      .attr('fill', 'none')
-      .attr('stroke-width', 1.5)
-      .attr('stroke-linejoin', 'round')
-      .attr('stroke-linecap', 'round')
-      .style('mix-blend-mode', 'multiply')
-      .attr('stroke', (d, i) => schemeCategory10[i])
-      .attr('d', d => createLine(d.values))
+      .enter().append('path') // add all the paths
+      .attr('stroke', (d, i) => schemeCategory10[i]) // add the stroke
+      .style('opacity', 0) // transition in the visibility of the line
+      .transition(t)
+      .style('opacity', 1)
+      .attr('d', d => createLine(d.values)) // create the actual line
 
   // otherwise render empty axes
   } else {
     removeLines(gNode)
-    setAxisProps({width, height, xScale: null, yScale: null})
+    setAxisProps({xScale: null, yScale: null})
   }
 
 }
 
 // TODO: Make update rely on D3's pattern
-const updateTimeSeries = function(svgNode, gNode, data, margin, setAxisProps) {
+const updateTimeSeries = function(gNode, data, margin, setAxisProps, transitionDuration) {
   removeLines(gNode)
-  createTimeSeries(svgNode, gNode, data, margin, setAxisProps)
+  // when resizing, don't transition
+  createTimeSeries(gNode, data, margin, setAxisProps, 0)
 }
 
-const removeLines = (gNode) => select(gNode).selectAll('.path').remove()
+const removeLines = (gNode) => select(gNode).selectAll('path').remove()
 
-const TimeSeries = ({ data, margin }) => {
-  const svgRef = useRef()
+const TimeSeries = ({ data, margin, transitionDuration }) => {
   const gRef = useRef()
   
   // props for rendering the axes
@@ -84,13 +96,12 @@ const TimeSeries = ({ data, margin }) => {
   // merge together new props with old props
   const handleSetAxisProps = newAxisProps => setAxisProps(prevAxisProps => ({...prevAxisProps, ...newAxisProps}))
 
-  const handleUpdateTimeSeries = () => updateTimeSeries(svgRef.current, gRef.current, data, margin, handleSetAxisProps)
+  const handleUpdateTimeSeries = () => updateTimeSeries(gRef.current, data, margin, handleSetAxisProps, transitionDuration)
   
-  useEffect(() => {
-    const svgNode = svgRef.current
+  useLayoutEffect(() => {
     const gNode = gRef.current
 
-    createTimeSeries(svgNode, gNode, data, margin, handleSetAxisProps)
+    createTimeSeries(gNode, data, margin, handleSetAxisProps, transitionDuration)
     window.addEventListener('resize', handleUpdateTimeSeries)
 
     // remove the event listener when dismounting
@@ -100,10 +111,16 @@ const TimeSeries = ({ data, margin }) => {
   }, [data, margin])
       
   return (
-    <svg ref={svgRef} width='100%' height='100%'>
+    <svg width='100%' height='100%'>
       <g transform={`translate(${margin.left},${margin.top})`}>
         <Axes {...axisProps} />
-        <g ref={gRef}></g>
+        <g ref={gRef}
+          fill="none"
+          strokeWidth={1.5}
+          strokeLinejoin="round"
+          strokeLinecap="round"
+          style={{mixBlendMode: 'multiply'}}
+        />
       </g>
     </svg>
   )
@@ -119,7 +136,8 @@ const rationalizeData = data => {
 
 TimeSeries.defaultProps = {
   margin: {top: 0, right: 0, bottom: 0, left: 0},
-  axes: true
+  axes: true,
+  transitionDuration: 500
 }
 
 TimeSeries.propTypes = {
@@ -137,7 +155,8 @@ TimeSeries.propTypes = {
     bottom: PropTypes.number,
     left: PropTypes.number
   }),
-  axes: PropTypes.bool
+  axes: PropTypes.bool,
+  transitionDuration: PropTypes.number
 }
 
 export default TimeSeries
