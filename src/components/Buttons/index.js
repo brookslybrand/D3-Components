@@ -3,40 +3,32 @@ import React from 'react'
 import styled from 'styled-components'
 
 const StandardButton = styled.button`
-  width: 6rem;
-  height: 3rem;
-  border: 0.1rem solid #9C7E8D;
-  margin: 1rem;
-  color: #E69FA3;
+  width: 8rem;
+  height: 4rem;
+  border: 0.15rem solid #9C7E8D;
+  background-color: white;
+  color: #9C7E8D;
+  font-family: 'Josefin Sans';
   font-size: 1.3rem;
   font-weight: 400;
   -webkit-transition-duration: 0.4s; /* Safari */
   transition-duration: 0.4s;
 
   &:hover{
-    border: 0.2rem solid #9C7E8D;
+    background-color: #E69FA3; /* For browsers that do not support gradients. Also creates a nice flicker when removing the hover. */
+    background-image: linear-gradient(to right, #E69FA3, white);
+    color: #9C7E8D;
   }
-`
 
-const StandardButtonHovered = styled.button`
-  width: 6rem;
-  height: 3rem;
-  border: 0.2rem solid #9C7E8D;
-  margin: 1rem;
-  color: #E69FA3;
-  font-size: 1.3rem;
-  font-weight: 400;
-`
+  &:focus {
+    outline:0;
+  }
 
-const StandardButtonClicked = styled.button`
-  width: 6rem;
-  height: 3rem;
-  background-color: #E69FA3;
-  border: 0.2rem solid #9C7E8D;
-  margin: 1rem;
-  color: #DCD5D8;
-  font-size: 1.3rem;
-  font-weight: 400;
+  &:active {
+    background: #F0EBEB;
+    opacity: 1;
+    transition: 0.2s;
+  }
 `
 
 const Buttons = () => {
@@ -44,8 +36,6 @@ const Buttons = () => {
   return (
     <div>
       <StandardButton>Test</StandardButton>
-      <StandardButtonHovered>Test</StandardButtonHovered>
-      <StandardButtonClicked>Test</StandardButtonClicked>
     </div>
   )
 }
