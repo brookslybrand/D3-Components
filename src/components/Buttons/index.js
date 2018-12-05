@@ -5,7 +5,7 @@ import styled from 'styled-components'
 const StandardButton = styled.button`
   width: 8rem;
   height: 4rem;
-  border: 0.15rem solid #9C7E8D;
+  border: 0.12rem solid #9C7E8D;
   background-color: white;
   color: #9C7E8D;
   font-family: 'Josefin Sans';
@@ -13,6 +13,8 @@ const StandardButton = styled.button`
   font-weight: 300;
   -webkit-transition-duration: 0.4s; /* Safari */
   transition-duration: 0.4s;
+  position: relative;
+  overflow: hidden;
 
   &:hover{
     background-color: #E69FA3; /* For browsers that do not support gradients. Also creates a nice flicker when removing the hover. */
@@ -24,11 +26,22 @@ const StandardButton = styled.button`
     outline:0;
   }
 
-  &:active {
+  &:after {
+    content: "";
     background: #F0EBEB;
-    color: #9C7E8D;
-    opacity: 1;
-    transition: 0.2s;
+    display: block;
+    position: absolute;
+    padding-top: 300%;
+    padding-left: 350%;
+    margin-left: -20px !important;
+    margin-top: -120%;
+    opacity: 0;
+    transition: all 1s;
+  }
+
+  &:active:after {
+    opacity: 0.75;
+    transition: 0s
   }
 `
 
